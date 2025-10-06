@@ -127,34 +127,42 @@ if submitted:
     }
 
     with st.status("Starting extraction...", state="running") as status:
-    progress = st.progress(0, text="Initializing extraction backend...")
-    try:
-        if backend == "agenticdoc":
-            status.update(label="Connecting to Landing AI Agentic Doc API...")
-            rows = _ade_rows(tmp_path)
-        elif backend == "pymupdf4llm":
-            status.update(label="Parsing document pages via PyMuPDF 4LLM...")
-            rows = []
-            md_pages = _pymu_md_pages(tmp_path)
-            total_pages = len(md_pages)
-            for i, (page_no, md) in enumerate(md_pages, start=1):
-                for r in parse_markdown_to_rows(md, source_file=uploaded.name, page_no=page_no):
-                    rows.append(r)
-                progress.progress(i / total_pages, text=f"Processed page {i}/{total_pages}…")
-        else:
-            status.update(label="Converting PDF to Markdown via Docling…")
-            md = docling_md(tmp_path)
-            status.update(label="Parsing Markdown into structured rows — this may take a few minutes for large PDFs.")
-            rows = list(parse_markdown_to_rows(md, source_file=uploaded.name))
+        progress = st.progress(0, text="Initializing extraction backend...")
+        try:
+            if backend == "agenticdoc":
+                status.update(label="Connecting to Landing AI Agentic Doc API...")
+                rows = _ade_rows(tmp_path)
 
-        status.update(label=f"Extraction complete — {len(rows)} rows generated.", state="complete")
-    except Exception as e:
-        status.update(label="Extraction failed.", state="error")
-        st.error(f"❌ {e}")
-        st.stop()
+            elif backend == "pymupdf4llm":
+                status.update(label="Parsing document pages via PyMuPDF 4LLM...")
+                rows = []
+                md_pages = _pymu_md_pages(tmp_path)
+                total_pages = len(md_pages)
+                for i, (page_no, md) in enumerate(md_pages, start=1):
+                    for r in parse_markdown_to_rows(md, source_file=uploaded.name, page_no=page_no):
+                        rows.append(r)
+                    progress.progress(
+                        i / total_pages,
+                        text=f"Processed page {i}/{total_pages}…"
+                    )
+
+            else:
+                status.update(label="Converting PDF to Markdown via Docling…")
+                md = docling_md(tmp_path)
+                status.update(
+                    label="Parsing Markdown into structured rows — this may take a few minutes for large PDFs."
+                )
+                rows = list(parse_markdown_to_rows(md, source_file=uploaded.name))
+
+            status.update(label=f"Extraction complete — {len(rows)} rows generated.", state="complete")
+
+        except Exception as e:
+            status.update(label="Extraction failed.", state="error")
+            st.error(f"❌ {e}")
+            st.stop()
 
     st.session_state["df_rows"] = rows
-    st.session_state["metadata"] = metadata
+    st.session_state["metadata"] = metadata``
 
 # ── If DataFrame Exists in Session, Show Results ─────────────────────
 if "df_rows" in st.session_state:
