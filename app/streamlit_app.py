@@ -42,7 +42,7 @@ st.set_page_config(
 
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("🌿 Green Guard: Document Parser")
+    st.title("🌿 Green Guard: Parsing Tool")
 
 with col_right:
     st.markdown(
