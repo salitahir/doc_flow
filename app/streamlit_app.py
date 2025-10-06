@@ -26,7 +26,7 @@ st.set_page_config(
 
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("🌿 Green Guard 4.0")
+    st.title("🌿 Green Guard 2.0")
 
 with col_right:
     st.markdown(
@@ -68,8 +68,27 @@ st.sidebar.header("Extraction Settings")
 backend = st.sidebar.selectbox(
     "Select Backend", ["docling", "pymupdf4llm", "agenticdoc"]
 )
-st.sidebar.caption("Agentic-Doc requires VISION_AGENT_API_KEY in your environment.")
 
+# Optional Landing.AI key input (only shows if AgenticDoc selected)
+if backend == "agenticdoc":
+    st.sidebar.markdown("**Landing.AI API Key (for Agentic Doc)**")
+    landing_api_key = st.sidebar.text_input(
+        "Enter your Landing.AI API key",
+        type="password",
+        placeholder="sk-xxxxxxxxxxxxxxxxx",
+    )
+    if landing_api_key:
+        os.environ["VISION_AGENT_API_KEY"] = landing_api_key
+        st.session_state["landing_api_key"] = landing_api_key
+
+    st.sidebar.caption(
+        "🔗 [Landing AI Docs](https://landing.ai/agentic-document-extraction)  "
+        "| 💰 [Pricing Info](https://landing.ai/pricing)\n\n"
+        "Your key is used locally so you’re billed directly by Landing AI."
+    )
+else:
+    landing_api_key = None
+    
 # ── Upload Form ───────────────────────────────────────────────────────
 st.markdown("### Upload File and Metadata")
 with st.form("upload_form", clear_on_submit=False):
@@ -107,21 +126,32 @@ if submitted:
         "Reporting Standard": reporting_std,
     }
 
-    with st.status("Extracting content...", state="running"):
-        try:
-            if backend == "agenticdoc":
-                rows = _ade_rows(tmp_path)
-            elif backend == "pymupdf4llm":
-                rows = []
-                for page_no, md in _pymu_md_pages(tmp_path):
-                    for r in parse_markdown_to_rows(md, source_file=uploaded.name, page_no=page_no):
-                        rows.append(r)
-            else:
-                md = docling_md(tmp_path)
-                rows = list(parse_markdown_to_rows(md, source_file=uploaded.name))
-        except Exception as e:
-            st.error(f"Extraction failed: {e}")
-            st.stop()
+    with st.status("Starting extraction...", state="running") as status:
+    progress = st.progress(0, text="Initializing extraction backend...")
+    try:
+        if backend == "agenticdoc":
+            status.update(label="Connecting to Landing AI Agentic Doc API...")
+            rows = _ade_rows(tmp_path)
+        elif backend == "pymupdf4llm":
+            status.update(label="Parsing document pages via PyMuPDF 4LLM...")
+            rows = []
+            md_pages = _pymu_md_pages(tmp_path)
+            total_pages = len(md_pages)
+            for i, (page_no, md) in enumerate(md_pages, start=1):
+                for r in parse_markdown_to_rows(md, source_file=uploaded.name, page_no=page_no):
+                    rows.append(r)
+                progress.progress(i / total_pages, text=f"Processed page {i}/{total_pages}…")
+        else:
+            status.update(label="Converting PDF to Markdown via Docling…")
+            md = docling_md(tmp_path)
+            status.update(label="Parsing Markdown into structured rows — this may take a few minutes for large PDFs.")
+            rows = list(parse_markdown_to_rows(md, source_file=uploaded.name))
+
+        status.update(label=f"Extraction complete — {len(rows)} rows generated.", state="complete")
+    except Exception as e:
+        status.update(label="Extraction failed.", state="error")
+        st.error(f"❌ {e}")
+        st.stop()
 
     st.session_state["df_rows"] = rows
     st.session_state["metadata"] = metadata
