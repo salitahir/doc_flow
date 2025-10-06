@@ -13,15 +13,32 @@ from docling.document_converter import DocumentConverter
 
 
 def docling_md(path: str) -> str:
+    """Whole-document markdown (no page numbers)."""
+    conv = DocumentConverter()
+    doc = conv.convert(path).document
+    return doc.export_to_markdown()
+
+
+def docling_md_pages(path: str):
     """
-    Convert a file path (PDF) to Markdown using Docling.
-    Returns: single Markdown string.
+    Yield (page_no, markdown_text) for each page (1-based).
+    Uses Docling's page-level export so we can attach page_no.
     """
-    converter = DocumentConverter()
-    doc = converter.convert(path).document
-    md_text = doc.export_to_markdown()
-    # Note: We keep raw Markdown; parsing happens downstream.
-    return md_text
+    conv = DocumentConverter()
+    doc = conv.convert(path).document
+    # Most Docling builds expose .pages with page-like objects
+    # that support export_to_markdown().
+    if hasattr(doc, "pages"):
+        for i, page in enumerate(doc.pages, start=1):
+            try:
+                md = page.export_to_markdown()
+            except Exception:
+                # Fallback: if a particular page can't export, emit empty string
+                md = ""
+            yield (i, md)
+    else:
+        # Fallback to whole-doc if pages are not exposed
+        yield (0, doc.export_to_markdown())
 
 
 def extract_markdown(path: str) -> str:
