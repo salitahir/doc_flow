@@ -73,7 +73,7 @@ st.divider()
 # ── Sidebar controls ──────────────────────────────────────────────────
 st.sidebar.header("Extraction Settings")
 backend = st.sidebar.selectbox(
-    "Select Backend", ["docling", "pymupdf4llm", "agenticdoc"]
+    "Select Backend", ["docling (recommended)", "pymupdf4llm", "agenticdoc"]
 )
 
 # Optional Landing.AI key input (only shows if AgenticDoc selected)
