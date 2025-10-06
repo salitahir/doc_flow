@@ -1,0 +1,4 @@
+docling
+pandas
+openpyxl
+tqdm
