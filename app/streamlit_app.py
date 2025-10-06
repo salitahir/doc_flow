@@ -95,6 +95,28 @@ if backend == "agenticdoc":
     )
 else:
     landing_api_key = None
+
+with st.sidebar.expander("⚙️ Backend Info", expanded=False):
+    st.markdown(
+        """
+**Docling (default)**  
+- ✅ Best overall text quality & reading order  
+- ✅ Good at headings/bullets/tables (markdown)  
+- ℹ️ No per-page progress by default (unless using page-wise mode)
+
+**PyMuPDF (pymupdf4llm)**  
+- ✅ Fast on CPU, page-by-page progress  
+- ✅ Great for simple PDFs; resilient when Docling struggles  
+- ⚠️ Complex layouts may lose structure (use as fallback)
+
+**Agentic Doc (Landing AI)**  
+- ✅ Most robust for complex layouts (multi-columns, tables, captions)  
+- ✅ Returns richer structure; great for tricky ESG reports  
+- 💳 Requires API key (billed by Landing AI)  
+- 🔗 [Docs](https://landing.ai/agentic-document-extraction) · [Pricing](https://landing.ai/pricing)
+        """,
+        unsafe_allow_html=True,
+    )
     
 # ── Upload Form ───────────────────────────────────────────────────────
 st.markdown("### Upload File and Metadata")
