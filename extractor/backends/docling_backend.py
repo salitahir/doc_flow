@@ -12,7 +12,7 @@ Later steps can switch to Docling's structured JSON if needed.
 from docling.document_converter import DocumentConverter
 
 
-def extract_markdown(path: str) -> str:
+def docling_md(path: str) -> str:
     """
     Convert a file path (PDF) to Markdown using Docling.
     Returns: single Markdown string.
@@ -22,3 +22,8 @@ def extract_markdown(path: str) -> str:
     md_text = doc.export_to_markdown()
     # Note: We keep raw Markdown; parsing happens downstream.
     return md_text
+
+
+def extract_markdown(path: str) -> str:
+    """Backward-compatible alias for docling_md."""
+    return docling_md(path)
