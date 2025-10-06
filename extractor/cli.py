@@ -5,10 +5,11 @@ import os
 from datetime import datetime
 from tqdm import tqdm
 
-from backends.docling_backend import docling_md  # your existing function
-from export import to_xlsx
-from sentence_postprocess import parse_markdown_to_rows
-from utils.outline import get_outline_ranges, label_for_page  # keep optional
+from extractor.backends.docling_backend import docling_md
+from extractor.export import to_xlsx
+from extractor.sentence_postprocess import parse_markdown_to_rows
+from extractor.utils.outline import get_outline_ranges, label_for_page
+from extractor.backends.pymupdf4llm_backend import extract_markdown_pages
 
 LOGGER = logging.getLogger("green_guard.extractor")
 
