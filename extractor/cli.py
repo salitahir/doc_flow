@@ -5,7 +5,6 @@ import os
 from datetime import datetime
 from tqdm import tqdm
 
-from extractor.backends.docling_backend import docling_md
 from extractor.export import to_xlsx
 from extractor.sentence_postprocess import parse_markdown_to_rows
 from extractor.utils.outline import get_outline_ranges, label_for_page
@@ -82,16 +81,42 @@ def main():
                 rows.append(r)
 
     else:
-        LOGGER.info("Step 1/3: Converting PDF to Markdown via Docling")
-        md_text = docling_md(input_path)
-        LOGGER.info("Docling conversion complete. Markdown length: %d chars", len(md_text))
+        LOGGER.info("Step 1/3: Converting PDF to Markdown via Docling (page-wise if available)")
+        from extractor.backends.docling_backend import docling_md_pages, docling_md
 
-        LOGGER.info("Step 2/3: Parsing Markdown into rows")
-        for r in tqdm(parse_markdown_to_rows(md_text,
-                                             source_file=os.path.basename(input_path),
-                                             use_heuristics=args.heuristic_headings),
-                      desc="Parsing", unit="row"):
-            rows.append(r)
+        rows = []
+        used_pagewise = False
+        try:
+            md_pages = list(docling_md_pages(input_path))
+            # If the only item is (0, md), that means fallback (no page info)
+            if not (len(md_pages) == 1 and md_pages[0][0] == 0):
+                used_pagewise = True
+        except Exception:
+            md_pages = []
+            used_pagewise = False
+
+        if used_pagewise:
+            LOGGER.info("Docling page-wise export enabled. Pages: %d", len(md_pages))
+            LOGGER.info("Step 2/3: Parsing Markdown pages into rows")
+            for page_no, md_text in tqdm(md_pages, desc="Parsing pages", unit="page"):
+                for r in parse_markdown_to_rows(
+                    md_text,
+                    source_file=os.path.basename(input_path),
+                    page_no=page_no,
+                    use_heuristics=args.heuristic_headings
+                ):
+                    rows.append(r)
+        else:
+            md_text = docling_md(input_path)
+            LOGGER.info("Docling conversion complete. Markdown length: %d chars", len(md_text))
+            LOGGER.info("Step 2/3: Parsing Markdown into rows")
+            for r in tqdm(parse_markdown_to_rows(
+                            md_text,
+                            source_file=os.path.basename(input_path),
+                            # no page_no here (remains 0)
+                            use_heuristics=args.heuristic_headings),
+                          desc="Parsing", unit="row"):
+                rows.append(r)
 
     # Optional outline enrichment (best when page_no>0; ADE may already provide page)
     if args.use_pdf_outline:
