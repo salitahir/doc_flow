@@ -72,7 +72,7 @@ st.markdown(
 st.markdown(
     """
     <div style="text-align:justify; line-height:1.5em;">
-      AI-powered NLP pipeline for detecting and classifying sustainability claims; within a larger greenwashing detection framework. Green Guard enables researchers and 
+      AI-powered NLP pipeline for detecting and classifying sustainability claims; within a larger greenwashing detection framework. The Green Guard Parsing Tool enables researchers and 
       analysts to upload corporate reports and generate clean, structured sentences for 
       further classification and analytics.
     </div>
