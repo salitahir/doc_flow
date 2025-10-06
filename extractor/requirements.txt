@@ -1,6 +1,9 @@
+ADE
 docling
-pymupdf
-pymupdf4llm
 pandas
 openpyxl
 tqdm
+streamlit
+pymupdf4llm
+agentic-doc
+python-dotenv

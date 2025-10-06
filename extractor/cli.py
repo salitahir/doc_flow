@@ -9,7 +9,6 @@ from extractor.backends.docling_backend import docling_md
 from extractor.export import to_xlsx
 from extractor.sentence_postprocess import parse_markdown_to_rows
 from extractor.utils.outline import get_outline_ranges, label_for_page
-from extractor.backends.pymupdf4llm_backend import extract_markdown_pages
 
 LOGGER = logging.getLogger("green_guard.extractor")
 
@@ -23,10 +22,12 @@ def setup_logging(level: str) -> None:
     LOGGER.info("Initialized logging at level=%s", level.upper())
 
 def main():
-    parser = argparse.ArgumentParser(description="Green Guard — Extraction (stable default)")
+    parser = argparse.ArgumentParser(description="Green Guard — Extraction (with ADE)")
     parser.add_argument("--in", dest="input_path", required=True, help="Path to PDF")
     parser.add_argument("--out", dest="out_path", required=True, help="Path to .xlsx")
-    parser.add_argument("--backend", choices=["docling", "pymupdf4llm"], default="docling",
+    parser.add_argument("--backend",
+                        choices=["docling", "pymupdf4llm", "agenticdoc"],
+                        default="docling",
                         help="Extraction backend (default=docling)")
     parser.add_argument("--use-pdf-outline", action="store_true",
                         help="If set (and page_no is available), override h1/h2/h3 from PDF bookmarks.")
@@ -47,17 +48,30 @@ def main():
         raise SystemExit(1)
 
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
-    LOGGER.info("Extraction started | backend=%s | heuristics=%s", args.backend, args.heuristic_headings)
+    LOGGER.info("Extraction started | backend=%s | heuristics=%s",
+                args.backend, args.heuristic_headings)
 
     rows = []
-    if args.backend == "pymupdf4llm":
-        md_pages = list(extract_markdown_pages(input_path))
-        LOGGER.info("Conversion complete via PyMuPDF. Pages: %d", len(md_pages))
+    if args.backend == "agenticdoc":
+        # ADE backend returns rows directly (already structured)
+        LOGGER.info("Step 1/2: Calling Agentic-Doc API (ADE)")
+        from extractor.backends.agenticdoc_backend import extract_rows as ade_rows
+        try:
+            rows = ade_rows(input_path)
+        except Exception as e:
+            LOGGER.error("ADE extraction failed: %s", e)
+            raise SystemExit(2)
+        LOGGER.info("ADE returned %d rows", len(rows))
 
-        # Safety net: warn if any pages are empty
+    elif args.backend == "pymupdf4llm":
+        LOGGER.info("Step 1/3: Converting PDF to per-page markdown via PyMuPDF")
+        from extractor.backends.pymupdf4llm_backend import extract_markdown_pages
+        md_pages = list(extract_markdown_pages(input_path))
+        LOGGER.info("Conversion complete. Pages: %d", len(md_pages))
+
         empty_pages = [p for p, md in md_pages if not (md and md.strip())]
         if empty_pages:
-            LOGGER.warning("No markdown extracted for %d page(s): %s", len(empty_pages), empty_pages[:10])
+            LOGGER.warning("No markdown for %d page(s): %s", len(empty_pages), empty_pages[:10])
 
         LOGGER.info("Step 2/3: Parsing page chunks into rows")
         for page_no, md_text in tqdm(md_pages, desc="Parsing pages", unit="page"):
@@ -66,6 +80,7 @@ def main():
                                             page_no=page_no,
                                             use_heuristics=args.heuristic_headings):
                 rows.append(r)
+
     else:
         LOGGER.info("Step 1/3: Converting PDF to Markdown via Docling")
         md_text = docling_md(input_path)
@@ -78,14 +93,14 @@ def main():
                       desc="Parsing", unit="row"):
             rows.append(r)
 
-    # Optional outline enrichment (works best with page_no)
+    # Optional outline enrichment (best when page_no>0; ADE may already provide page)
     if args.use_pdf_outline:
         LOGGER.info("Enriching rows with PDF outline data")
         ranges = get_outline_ranges(input_path)
         if ranges:
             for r in rows:
                 pg = r.get("page_no", 0)
-                if pg > 0:
+                if pg and pg > 0:
                     oh1, oh2, oh3 = label_for_page(ranges, pg)
                     if oh1 or oh2 or oh3:
                         r["h1"] = oh1 or r.get("h1", "")
@@ -98,15 +113,16 @@ def main():
     # Quality summary
     LOGGER.info("Step 3/3: Quality summary before export")
     total = len(rows)
-    n_empty = sum(1 for r in rows if not r.get("text"))
+    n_empty = sum(1 for r in rows if not (r.get("text") or "").strip())
     n_head = sum(1 for r in rows if r.get("section_type") == "heading")
     n_table = sum(1 for r in rows if r.get("section_type") == "table")
     n_bull  = sum(1 for r in rows if r.get("section_type") == "bullet")
-    LOGGER.info("Rows=%d | empty_text=%d | headings=%d | tables=%d | bullets=%d", total, n_empty, n_head, n_table, n_bull)
+    LOGGER.info("Rows=%d | empty_text=%d | headings=%d | tables=%d | bullets=%d",
+                total, n_empty, n_head, n_table, n_bull)
     if n_empty > max(5, int(0.05 * total)):
-        LOGGER.warning("High empty-text ratio detected; consider using --backend docling")
+        LOGGER.warning("High empty-text ratio; consider switching backend.")
     if n_head < 10 and args.backend != "docling":
-        LOGGER.warning("Few headings detected; consider using --backend docling")
+        LOGGER.warning("Few headings detected; docling may capture more structure here.")
 
     LOGGER.info("Writing to Excel: %s", out_path)
     to_xlsx(rows, out_path)
