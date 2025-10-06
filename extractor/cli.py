@@ -51,7 +51,6 @@ def main():
 
     rows = []
     if args.backend == "pymupdf4llm":
-        from backends.pymupdf4llm_backend import extract_markdown_pages
         md_pages = list(extract_markdown_pages(input_path))
         LOGGER.info("Conversion complete via PyMuPDF. Pages: %d", len(md_pages))
 
