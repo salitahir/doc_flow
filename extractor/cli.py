@@ -80,23 +80,18 @@ def main():
     rows = []
     if args.backend == "pymupdf4llm":
         from backends.pymupdf4llm_backend import extract_markdown_pages
-
+    
         md_pages = list(extract_markdown_pages(input_path))
         LOGGER.info("Conversion complete via PyMuPDF4LLM. Pages: %d", len(md_pages))
-
-        LOGGER.info("Step 2/3: Parsing Markdown into structured rows")
-        for page_no, md_text in tqdm(md_pages, desc="Parsing pages", unit="page"):
-            for r in parse_markdown_to_rows(
-                md_text,
-                source_file=os.path.basename(input_path),
-                page_no=page_no,
-            ):
-                rows.append(r)
-    else:
-        md_text = docling_md(input_path)
-        LOGGER.info(
-            "Docling conversion complete. Markdown length: %d chars", len(md_text)
-        )
+    
+        # --- SAFETY NET: warn if any pages extracted as empty ---
+        empty_pages = [p for p, md in md_pages if not (md and md.strip())]
+        if empty_pages:
+            LOGGER.warning(
+                "No markdown extracted for %d page(s): %s",
+                len(empty_pages),
+                empty_pages[:10],  # show only first few
+            )
 
         LOGGER.info("Step 2/3: Parsing Markdown into structured rows")
         rows_iter = parse_markdown_to_rows(
