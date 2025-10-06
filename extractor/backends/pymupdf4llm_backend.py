@@ -1,14 +1,15 @@
-import fitz
-import pymupdf4llm
+import fitz  # PyMuPDF
 
 def extract_markdown_pages(path: str):
     """
-    Yield (page_no, markdown_text) for each page (1-based).
-    Uses page_chunks=True so we don't process the whole doc as one string.
+    Yield (page_no, markdown_text) for each page (1-based) using PyMuPDF directly.
+    This is more reliable than page-chunking via pymupdf4llm for some PDFs.
     """
-    data = pymupdf4llm.to_markdown(path, page_chunks=True)
-    # data is a list; each item is a dict for a page
-    # common keys include "text" (markdown) and some metadata
-    for idx, page in enumerate(data, start=1):
-        md = page.get("text", "") or ""
-        yield (idx, md)
+    doc = fitz.open(path)
+    try:
+        for i in range(doc.page_count):
+            page = doc.load_page(i)
+            md = page.get_text("markdown") or ""
+            yield (i + 1, md)
+    finally:
+        doc.close()
