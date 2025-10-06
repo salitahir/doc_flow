@@ -162,7 +162,7 @@ if submitted:
             st.stop()
 
     st.session_state["df_rows"] = rows
-    st.session_state["metadata"] = metadata``
+    st.session_state["metadata"] = metadata
 
 # ── If DataFrame Exists in Session, Show Results ─────────────────────
 if "df_rows" in st.session_state:
