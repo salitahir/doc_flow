@@ -3,6 +3,15 @@ import io
 import pandas as pd
 import streamlit as st
 
+# --- make sure local package "extractor" is importable on Streamlit Cloud ---
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]   # repo root
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+# ----------------------------------------------------------------------------
+
 from extractor.backends.docling_backend import docling_md
 from extractor.sentence_postprocess import parse_markdown_to_rows
 from extractor.export import to_xlsx_with_options

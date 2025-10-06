@@ -1,5 +1,6 @@
 ADE
 docling
+pymupdf
 pandas
 openpyxl
 tqdm
