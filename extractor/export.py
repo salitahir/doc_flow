@@ -10,9 +10,14 @@ LOGGER = logging.getLogger("green_guard.extractor.export")
 REQUIRED_COLUMNS = [
     "source_file",
     "line_no",
+    "page_no",
     "section_type",
     "heading_level",
     "is_table",
+    "h1",
+    "h2",
+    "h3",
+    "section_path",
     "text",
 ]
 
