@@ -10,6 +10,8 @@ Goals:
 import re
 from typing import Dict, Iterator, List, Optional
 
+from extractor.text_clean import clean_text
+
 # Explicit markdown headings
 _HEADING_RE = re.compile(r"^(?P<hashes>#{1,6})\s+(?P<text>.+)$")
 # Bullets and tables
@@ -110,7 +112,9 @@ def parse_markdown_to_rows(
         m = _HEADING_RE.match(line)
         if m:
             level = len(m.group("hashes"))
-            text = m.group("text").strip()
+            text = clean_text(m.group("text").strip())
+            if not text:
+                continue
             current_section = text  # forward-fill simple context
             last_heading_level = level
             yield _emit_row(
@@ -122,8 +126,11 @@ def parse_markdown_to_rows(
 
         # 2) Table rows
         if _TABLE_RE.match(line):
+            cleaned_line = clean_text(line)
+            if not cleaned_line:
+                continue
             yield _emit_row(
-                source_file, i, line,
+                source_file, i, cleaned_line,
                 section_type="table", heading_level=0, is_table=1,
                 current_section=current_section, page_no=page_no
             )
@@ -131,8 +138,11 @@ def parse_markdown_to_rows(
 
         # 3) Bullets
         if _BULLET_RE.match(line):
+            cleaned_bullet = clean_text(line.strip())
+            if not cleaned_bullet:
+                continue
             yield _emit_row(
-                source_file, i, line.strip(),
+                source_file, i, cleaned_bullet,
                 section_type="bullet", heading_level=0, is_table=0,
                 current_section=current_section, page_no=page_no
             )
@@ -142,7 +152,10 @@ def parse_markdown_to_rows(
         if use_heuristics:
             lvl = _infer_level_from_numbering(line)
             if lvl is not None:
-                txt = line.split(None, 1)[1] if " " in line else line
+                txt_raw = line.split(None, 1)[1] if " " in line else line
+                txt = clean_text(txt_raw)
+                if not txt:
+                    continue
                 current_section = txt
                 last_heading_level = lvl
                 yield _emit_row(
@@ -154,7 +167,9 @@ def parse_markdown_to_rows(
 
             lvl2 = _maybe_heading_from_heuristics(line, last_heading_level)
             if lvl2 is not None:
-                current_section = line.strip()
+                current_section = clean_text(line.strip())
+                if not current_section:
+                    continue
                 last_heading_level = lvl2
                 yield _emit_row(
                     source_file, i, current_section,
@@ -166,8 +181,11 @@ def parse_markdown_to_rows(
         # 5) Plain text -> naive sentence split
         for s in _SENT_SPLIT.split(line.strip()):
             if s:
+                s_clean = clean_text(s)
+                if not s_clean:
+                    continue
                 yield _emit_row(
-                    source_file, i, s,
+                    source_file, i, s_clean,
                     section_type="text", heading_level=0, is_table=0,
                     current_section=current_section, page_no=page_no
                 )
