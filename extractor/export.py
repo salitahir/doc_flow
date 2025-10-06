@@ -1,44 +1,23 @@
-"""Utilities for exporting parsed rows to Excel."""
-
-import logging
-from typing import Iterable, List, Mapping
-
 import pandas as pd
+from typing import Dict, List
 
-LOGGER = logging.getLogger("green_guard.extractor.export")
-
-REQUIRED_COLUMNS = [
-    "source_file",
-    "line_no",
-    "page_no",
-    "section_type",
-    "heading_level",
-    "is_table",
-    "h1",
-    "h2",
-    "h3",
-    "section_path",
+_REQUIRED_COLS = [
+    "source_file","line_no","page_no",
+    "section_type","heading_level","is_table",
+    "h1","h2","h3","section_path",
+    "current_section",   # NEW
     "text",
 ]
 
+def to_xlsx(rows: List[Dict], out_path: str) -> None:
+    if not rows:
+        df = pd.DataFrame(columns=_REQUIRED_COLS)
+        df.to_excel(out_path, index=False)
+        return
 
-def _validate_rows(rows: Iterable[Mapping]) -> List[Mapping]:
-    materialized: List[Mapping] = list(rows)
-    if not materialized:
-        LOGGER.warning("No rows provided for export; resulting workbook will be empty.")
-        return materialized
-
-    missing_columns = set()
-    for row in materialized:
-        missing_columns.update(col for col in REQUIRED_COLUMNS if col not in row)
-    if missing_columns:
-        raise ValueError(f"Rows missing required columns: {sorted(missing_columns)}")
-    return materialized
-
-
-def to_xlsx(rows: Iterable[Mapping], out_path: str) -> None:
-    """Write iterable of row dicts to Excel with a stable column order."""
-    materialized = _validate_rows(rows)
-    df = pd.DataFrame(materialized, columns=REQUIRED_COLUMNS)
-    df.to_excel(out_path, index=False, engine="openpyxl")
-    LOGGER.info("Excel export complete: %s (rows=%d)", out_path, len(df))
+    df = pd.DataFrame(rows)
+    for c in _REQUIRED_COLS:
+        if c not in df.columns:
+            df[c] = None
+    df = df[_REQUIRED_COLS]
+    df.to_excel(out_path, index=False)
