@@ -25,7 +25,7 @@ def _ade_rows(path):
 
 # ── Page config & header ───────────────────────────────────────────────
 st.set_page_config(
-    page_title="🌿 Green Guard 3.0",
+    page_title="🌿 Green Guard",
     page_icon="🌿",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -33,7 +33,7 @@ st.set_page_config(
 
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("🌿 Green Guard 2.0")
+    st.title("🌿 Green Guard: Document Parser")
 
 with col_right:
     st.markdown(
