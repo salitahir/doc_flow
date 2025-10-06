@@ -1,3 +1,5 @@
+import os
+import io
 import pandas as pd
 import streamlit as st
 
@@ -5,22 +7,24 @@ from extractor.backends.docling_backend import docling_md
 from extractor.sentence_postprocess import parse_markdown_to_rows
 from extractor.export import to_xlsx_with_options
 
-# Optional backends wired in earlier tasks
+
 def _pymu_md_pages(path):
     from extractor.backends.pymupdf4llm_backend import extract_markdown_pages
     return list(extract_markdown_pages(path))
+
 
 def _ade_rows(path):
     from extractor.backends.agenticdoc_backend import extract_rows
     return extract_rows(path)
 
-st.set_page_config(page_title="Green Guard – ESG Extractor", layout="wide")
-st.title("Green Guard — ESG PDF Extractor (MVP)")
+
+st.set_page_config(page_title="Green Guard – AI-powered NLP pipeline for detecting and classifying sustainability claims; within a larger greenwashing detection framework.", layout="wide")
+st.title("Green Guard")
 
 with st.sidebar:
     st.markdown("### Extraction Settings")
     backend = st.selectbox("Backend", ["docling", "pymupdf4llm", "agenticdoc"])
-    st.caption("Agentic-Doc requires VISION_AGENT_API_KEY.")
+    st.caption("Agentic-Doc requires VISION_AGENT_API_KEY in your environment.")
 
 st.markdown("### Upload & Metadata")
 with st.form("upload_form", clear_on_submit=False):
@@ -79,10 +83,10 @@ if submitted:
     # Build an Excel with renamed headers + hidden columns and metadata
     excel_bytes = to_xlsx_with_options(
         rows,
-        out_path=None,  # in-memory for download
+        out_path=None,
         metadata=metadata,
-        rename_map=None,  # use defaults
-        hidden_cols=["Page_No", "H1", "H2", "H3"],  # your preference
+        rename_map=None,
+        hidden_cols=["Page_No", "H1", "H2", "H3"],
     )
 
     # Apply the same renaming to the on-screen preview for consistency
@@ -110,14 +114,12 @@ if submitted:
     st.dataframe(df.head(300), use_container_width=True)
 
     st.markdown("### Download")
-    # CSV
     st.download_button(
         "Download CSV",
         data=df.to_csv(index=False).encode("utf-8"),
         file_name="extracted.csv",
         mime="text/csv",
     )
-    # Excel (hidden cols applied)
     st.download_button(
         "Download Excel (with hidden columns)",
         data=excel_bytes.getvalue(),
