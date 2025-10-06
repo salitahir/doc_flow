@@ -147,7 +147,7 @@ if submitted:
                     )
 
             else:
-                status.update(label="Converting PDF to Markdown via Docling…")
+                status.update(label="Converting PDF to Markdown via Docling: — this may take a few minutes for large PDF…")
                 md = docling_md(tmp_path)
                 status.update(
                     label="Parsing Markdown into structured rows — this may take a few minutes for large PDFs."
