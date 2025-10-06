@@ -8,7 +8,9 @@ NBSP_RE       = re.compile(r"\u00A0")         # non-breaking space
 CTRL_RE       = re.compile(r"[\u0000-\u001F\u007F]")
 DUP_EN_RE     = re.compile(r"^(?P<a>.+?)\s+\1$", re.IGNORECASE)  # "abc abc" -> "abc"
 # common bilingual prefix pattern: non-Latin block then the English
-NON_LATIN_PREFIX_RE = re.compile(r"^(?P<nonlatin>[^\x00-\x7F]{2,}[\s:|-/]+)(?P<latin>[A-Za-z].+)$")
+NON_LATIN_PREFIX_RE = re.compile(
+    r"^(?P<nonlatin>[^\x00-\x7F]{2,}[\s:|/\-]+)(?P<latin>[A-Za-z].+)$"
+)
 # stray pipes from markdown tables when one cell leaks
 LEADING_PIPE_RE = re.compile(r"^\s*\|\s*")
 TRAILING_PIPE_RE = re.compile(r"\s*\|\s*$")
