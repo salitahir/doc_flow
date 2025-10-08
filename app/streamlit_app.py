@@ -39,47 +39,41 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Hide Streamlit’s default underline on <h1> elements
-st.markdown(
-    """
-    <style>
-    h1 {
-        border-bottom: none !important;
-        padding-bottom: 0 !important;
-        margin-bottom: 0.2em !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
+# ── Header: title and byline ────────────────────────────────────────────
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("DocFlow: Parsing Tool")
+    st.title("🌏 Quake Talk 4.0")
+
+st.divider()
 
 with col_right:
     st.markdown(
         """
         <div style="text-align:right; font-size:0.8em;">
-          Developed & Deployed by 
+          Developed & Deployed by
           <a href="https://www.linkedin.com/in/salitahir/" target="_blank">
-            Ali Tahir 
+            Ali Tahir
           </a>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+# ── Full-width right-aligned “Overview” link (small caption) ──────────
 st.markdown(
     """
     <div style="text-align:right; font-size:0.8em; margin-bottom:0.5em;">
-      <a href="https://github.com/salitahir/green_guard" target="_blank">
-        Project Overview and Documentation
+      <a
+        href="https://github.com/salitahir/green_guard" target="_blank"
+      >
+        Overview and Business Application
       </a>
     </div>
     """,
     unsafe_allow_html=True,
 )
+
+# ── Full-width project description ────────────────────────────────────
 
 st.markdown(
     """
