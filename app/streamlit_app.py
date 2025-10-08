@@ -85,7 +85,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.divider()
 # ── Full-width project description ────────────────────────────────────
 
 st.markdown(
@@ -97,7 +96,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Keep only this one divider under your description
+# Keep only this one divider under the description
 st.divider()
 
 # ── Sidebar controls ──────────────────────────────────────────────────
