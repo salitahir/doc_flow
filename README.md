@@ -7,8 +7,7 @@
 
 ## 📌 Project Overview
 
-**Green Guard 2.0** is a hybrid document-to-structured-data pipeline designed to help researchers and analysts extract **clean, analyzable text** from complex PDF reports.  
-It automates the messy task of parsing sustainability, ESG, and compliance reports — turning them into **ready-to-use spreadsheets** for labeling, analytics, or model training.
+**Green Guard 2.0** is a hybrid document-to-structured-data pipeline designed to help researchers and analysts extract **clean, analyzable text** from complex PDF reports. It automates the messy task of parsing sustainability, ESG, and compliance reports — turning them into **ready-to-use spreadsheets** for labeling, analytics, or model training.
 
 📎 [Slide Deck: Overview & Workflow Demo](#) *(optional link placeholder)*
 
