@@ -40,11 +40,23 @@ st.set_page_config(
 )
 
 # ── Header: title and byline ────────────────────────────────────────────
-col_left, col_right = st.columns([3, 1])
+# Custom H1 without underline
 with col_left:
-    st.title("📃 Doc Flow 2.0")
-
-st.divider()
+    st.markdown(
+        """
+        <h1 style="
+            margin: 0 0 .25rem 0;
+            padding: 0;
+            border: none;
+            font-weight: 700;
+            font-size: 2.25rem;
+            line-height: 1.2;
+        ">
+          DocFlow: Parsing Tool
+        </h1>
+        """,
+        unsafe_allow_html=True,
+    )
 
 with col_right:
     st.markdown(
