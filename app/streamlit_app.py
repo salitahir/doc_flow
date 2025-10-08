@@ -31,7 +31,7 @@ def _ade_rows(path):
     from docflow.backends.agenticdoc_backend import extract_rows
     return extract_rows(path)
 
-# ── Page config & header ───────────────────────────────────────────────
+# ── Page config: wide mode & favicon ─────────────────────────────────
 st.set_page_config(
     page_title="Doc Flow",
     page_icon="📃",
@@ -42,7 +42,7 @@ st.set_page_config(
 # ── Header: title and byline ────────────────────────────────────────────
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("🌏 Quake Talk 4.0")
+    st.title("📃 Doc Flow 2.0")
 
 st.divider()
 
@@ -73,6 +73,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.divider()
 # ── Full-width project description ────────────────────────────────────
 
 st.markdown(
