@@ -10,7 +10,7 @@ Goals:
 import re
 from typing import Dict, Iterator, List, Optional
 
-from extractor.text_clean import clean_text
+from docflow.text_clean import clean_text
 
 # Explicit markdown headings
 _HEADING_RE = re.compile(r"^(?P<hashes>#{1,6})\s+(?P<text>.+)$")

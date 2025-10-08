@@ -1,9 +1,8 @@
 import os
-import io
 import pandas as pd
 import streamlit as st
 
-# --- make sure local package "extractor" is importable on Streamlit Cloud ---
+# --- make sure local package "docflow" is importable on Streamlit Cloud ---
 import sys
 from pathlib import Path
 
@@ -12,14 +11,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 # ----------------------------------------------------------------------------
 
-from extractor.backends.docling_backend import docling_md
-from extractor.sentence_postprocess import parse_markdown_to_rows
-from extractor.export import to_xlsx_with_options
+from docflow.backends.docling_backend import docling_md
+from docflow.sentence_postprocess import parse_markdown_to_rows
+from docflow.export import to_xlsx_with_options
 
 # Optional backends
 def _pymu_md_pages(path):
     try:
-        from extractor.backends.pymupdf4llm_backend import extract_markdown_pages
+        from docflow.backends.pymupdf4llm_backend import extract_markdown_pages
         pages = list(extract_markdown_pages(path))
         if not pages:
             raise RuntimeError("No pages extracted (empty or unsupported PDF).")
@@ -29,22 +28,21 @@ def _pymu_md_pages(path):
         raise RuntimeError(f"PyMuPDF extraction failed: {e}") from e
 
 def _ade_rows(path):
-    from extractor.backends.agenticdoc_backend import extract_rows
+    from docflow.backends.agenticdoc_backend import extract_rows
     return extract_rows(path)
 
 # ── Page config & header ───────────────────────────────────────────────
 st.set_page_config(
-    page_title="🌿 Green Guard",
-    page_icon="🌿",
+    page_title="📄 DocFlow",
+    page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.title("🌿 Green Guard: Parsing Tool")
-
-st.divider()
+    st.title("📄 DocFlow: Parsing Tool")
+    st.markdown("<hr style='margin-top:-1em;border:0.5px solid #444;'>", unsafe_allow_html=True)
 
 with col_right:
     st.markdown(
@@ -72,9 +70,7 @@ st.markdown(
 st.markdown(
     """
     <div style="text-align:justify; line-height:1.5em;">
-      AI-powered NLP pipeline for detecting and classifying sustainability claims; within a larger greenwashing detection framework. The Green Guard Parsing Tool enables researchers and 
-      analysts to upload corporate reports and generate clean, structured sentences for 
-      further classification and analytics.
+      DocFlow converts complex PDFs into clean, structured rows (sentences, headings, bullets, tables) for any downstream NLP or analytics workflow.
     </div>
     """,
     unsafe_allow_html=True,
@@ -132,22 +128,19 @@ with st.sidebar.expander("⚙️ Backend Info", expanded=False):
 # ── Upload Form ───────────────────────────────────────────────────────
 st.markdown("### Upload File and Metadata")
 with st.form("upload_form", clear_on_submit=False):
-    uploaded = st.file_uploader("Upload ESG / Sustainability PDF", type=["pdf"])
+    uploaded = st.file_uploader("Upload PDF", type=["pdf"])
     company = st.text_input("Company Name", value="")
-    year = st.text_input("Reporting Year", value="")
-    reporting_options = [
-        "CDP (Carbon Disclosure Project)",
-        "ESRS (European Sustainability Reporting Standards)",
-        "GRI (Global Reporting Initiative)",
-        "IFRS S1 & S2",
-        "ISO 14001 (Environmental Management Systems)",
-        "ISO 26000 (Social Responsibility)",
-        "ISSB (International Sustainability Standards Board)",
+    year = st.text_input("Document Year", value="")
+    document_type_options = [
+        "Company Filings",
+        "Financial Reports",
+        "Marketing Collateral",
+        "Regulatory Filings",
+        "Research Papers",
+        "Technical Manuals",
         "Other",
-        "SASB (Sustainability Accounting Standards Board)",
-        "TCFD (Taskforce on Climate-related Financial Disclosures)",
     ]
-    reporting_std = st.selectbox("Reporting Standard", reporting_options, index=0)
+    document_type = st.selectbox("Document Type", document_type_options, index=0)
     submitted = st.form_submit_button("🧾 Extract Text")
 
 # ── Run Extraction Only Once per Session ─────────────────────────────
@@ -163,7 +156,7 @@ if submitted:
     metadata = {
         "Company": company,
         "Year": year,
-        "Reporting Standard": reporting_std,
+        "Document Type": document_type,
     }
 
     with st.status("Starting extraction...", state="running") as status:
@@ -235,7 +228,7 @@ if "df_rows" in st.session_state:
         "current_section": "Current Section",
     }
     df = df.rename(columns=rename_map)
-    for k in ["Company", "Year", "Reporting Standard"]:
+    for k in ["Company", "Year", "Document Type"]:
         df.insert(0, k, metadata.get(k, ""))
 
     st.markdown("### Preview of Extracted Content")
