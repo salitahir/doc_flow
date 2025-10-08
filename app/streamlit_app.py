@@ -42,8 +42,8 @@ st.set_page_config(
 col_left, col_right = st.columns([3, 1])
 with col_left:
     st.title("📃 DocFlow: Parsing Tool")
-st.divider()
-    
+    st.markdown("<hr style='margin-top:-1em;border:0.5px solid #444;'>", unsafe_allow_html=True)
+
 with col_right:
     st.markdown(
         """
