@@ -1,4 +1,4 @@
-# 🌿 Green Guard 2.0  
+# 🌿 Green-Guard 2.0  
 **From PDFs to Insights: A Hybrid Document Parser for Sustainability and Compliance Analytics**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-orange?logo=streamlit)](https://greenguard-documentparser.streamlit.app/) [![LinkedIn](https://img.shields.io/badge/Author-LinkedIn-blue?logo=linkedin)](https://www.linkedin.com/in/salitahir/) [![Email](https://img.shields.io/badge/Email-s.ali.tahir%40outlook.com-blue?logo=microsoft-outlook)](mailto:s.ali.tahir@outlook.com)
