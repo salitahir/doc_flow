@@ -15,7 +15,15 @@ from docflow.backends.docling_backend import docling_md
 from docflow.sentence_postprocess import parse_markdown_to_rows
 from docflow.export import to_xlsx_with_options
 
-# Optional backends
+# ── Page config: wide mode & favicon ─────────────────────────────────
+st.set_page_config(
+    page_title="Doc Flow",
+    page_icon="📃",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# ── Load backends ───────────────────────────────────────────────
 def _pymu_md_pages(path):
     try:
         from docflow.backends.pymupdf4llm_backend import extract_markdown_pages
@@ -31,32 +39,12 @@ def _ade_rows(path):
     from docflow.backends.agenticdoc_backend import extract_rows
     return extract_rows(path)
 
-# ── Page config: wide mode & favicon ─────────────────────────────────
-st.set_page_config(
-    page_title="Doc Flow",
-    page_icon="📃",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
 # ── Header: title and byline ────────────────────────────────────────────
-# Custom H1 without underline
+col_left, col_right = st.columns([3, 1])
 with col_left:
-    st.markdown(
-        """
-        <h1 style="
-            margin: 0 0 .25rem 0;
-            padding: 0;
-            border: none;
-            font-weight: 700;
-            font-size: 2.25rem;
-            line-height: 1.2;
-        ">
-          DocFlow: Parsing Tool
-        </h1>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.title("📃 Doc Flow 2.0")
+
+st.divider()
 
 with col_right:
     st.markdown(
