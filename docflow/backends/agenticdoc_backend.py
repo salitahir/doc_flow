@@ -5,7 +5,7 @@ Requires:
 - pip install agentic-doc python-dotenv
 - Set env var VISION_AGENT_API_KEY=your_key (or put it in .env)
 
-This backend returns a list of row dicts that match the extractor schema.
+This backend returns a list of row dicts that match the DocFlow schema.
 """
 
 import os

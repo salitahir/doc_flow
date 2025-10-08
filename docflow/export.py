@@ -60,7 +60,7 @@ def to_xlsx(rows: List[Dict], out_path: str) -> None:
 def to_xlsx_with_options(
     rows: List[Dict],
     out_path: Optional[str] = None,
-    metadata: Optional[Dict[str, str]] = None,  # {"Company": "...", "Year": "2024", "Reporting Standard": "..."}
+    metadata: Optional[Dict[str, str]] = None,  # {"Company": "...", "Year": "2024", "Document Type": "..."}
     rename_map: Optional[Dict[str, str]] = None,
     hidden_cols: Optional[List[str]] = None,
 ) -> BytesIO:
@@ -79,9 +79,9 @@ def to_xlsx_with_options(
     df = df.rename(columns=rename_map)
 
     meta = metadata or {}
-    for key in ["Company", "Year", "Reporting Standard"]:
+    for key in ["Company", "Year", "Document Type"]:
         df[key] = meta.get(key, "")
-    df = _order_cols(df, meta_cols=["Company", "Year", "Reporting Standard"], rename_map=rename_map)
+    df = _order_cols(df, meta_cols=["Company", "Year", "Document Type"], rename_map=rename_map)
 
     bio = BytesIO()
     with pd.ExcelWriter(out_path or bio, engine="openpyxl") as writer:

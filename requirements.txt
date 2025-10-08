@@ -1,1 +1,1 @@
--r extractor/requirements.txt
+-r docflow/requirements.txt

@@ -2,7 +2,7 @@ import argparse
 
 import pandas as pd
 
-from extractor.text_clean import clean_text
+from docflow.text_clean import clean_text
 
 
 def main():
