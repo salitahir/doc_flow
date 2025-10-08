@@ -33,8 +33,8 @@ def _ade_rows(path):
 
 # ── Page config & header ───────────────────────────────────────────────
 st.set_page_config(
-    page_title="Doc Flow",
-    page_icon="📃",
+    page_title="📃 Doc Flow",
+    page_icon="📰",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -43,8 +43,7 @@ col_left, col_right = st.columns([3, 1])
 with col_left:
     st.title("📃 DocFlow: Parsing Tool")
 st.divider()
-    st.markdown("<hr style='margin-top:-1em;border:0.5px solid #444;'>", unsafe_allow_html=True)
-
+    
 with col_right:
     st.markdown(
         """
