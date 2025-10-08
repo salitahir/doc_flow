@@ -56,16 +56,20 @@ flowchart TD
 
 ---
 
-## 🗃️ Example Output Columns
+## 🗃️ Output Columns
 
-| Column             | Description                             |
-|--------------------|-----------------------------------------|
-| `text`             | Extracted sentence or paragraph         |
-| `heading_level`    | Hierarchical depth (e.g., H1, H2, H3)   |
-| `is_bullet`        | Boolean flag for bullet points          |
-| `is_table`         | Identifies text originating from tables |
-| `page_number`      | (Optional) Source page tracking         |
-| `section_context`  | Detected section heading or topic       |
+| Column                       | Description                                                                                                   |
+|------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `company`                    | **User-defined input** — name of the organization whose report is being processed                             |
+| `year`                       | **User-defined input** — reporting or publication year associated with the uploaded document                  |
+| `reporting_standard`         | **User-selected value** from dropdown (e.g., CDP, ESRS, GRI, IFRS S1 & S2, ISO 14001, ISO 26000, ISSB, Other) |
+| `source`                     | **User-defined input** — filename or identifier of the uploaded report (e.g., `cdp_2024_report.pdf`)          |
+| `text`                       | Extracted sentence or paragraph                                                                               |
+| `heading_level`              | Hierarchical depth (e.g., H1, H2, H3)                                                                         |
+| `is_bullet`                  | Boolean flag for bullet points                                                                                |
+| `is_table`                   | Identifies text originating from tables                                                                       |
+| `page_number`                | (Optional) Source page tracking                                                                               |
+| `section_context`            | Detected section heading or topic                                                                             |
 
 ---
 
