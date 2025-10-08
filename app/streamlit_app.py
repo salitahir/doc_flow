@@ -39,6 +39,20 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# Hide Streamlit’s default underline on <h1> elements
+st.markdown(
+    """
+    <style>
+    h1 {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0.2em !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 col_left, col_right = st.columns([3, 1])
 with col_left:
     st.title("DocFlow: Parsing Tool")
@@ -66,6 +80,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 st.markdown(
     """
     <div style="text-align:justify; line-height:1.5em;">
@@ -74,6 +89,8 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+# Keep only this one divider under your description
 st.divider()
 
 # ── Sidebar controls ──────────────────────────────────────────────────
