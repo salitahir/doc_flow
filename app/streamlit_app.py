@@ -15,14 +15,6 @@ from docflow.backends.docling_backend import docling_md
 from docflow.sentence_postprocess import parse_markdown_to_rows
 from docflow.export import to_xlsx_with_options
 
-# ── Page config: wide mode & favicon ─────────────────────────────────
-st.set_page_config(
-    page_title="Doc Flow",
-    page_icon="📃",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
 # ── Load backends ───────────────────────────────────────────────
 def _pymu_md_pages(path):
     try:
@@ -38,6 +30,14 @@ def _pymu_md_pages(path):
 def _ade_rows(path):
     from docflow.backends.agenticdoc_backend import extract_rows
     return extract_rows(path)
+
+# ── Page config: wide mode & favicon ─────────────────────────────────
+st.set_page_config(
+    page_title="Doc Flow",
+    page_icon="📃",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 # ── Header: title and byline ────────────────────────────────────────────
 col_left, col_right = st.columns([3, 1])
