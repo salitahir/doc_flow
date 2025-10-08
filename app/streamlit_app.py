@@ -34,7 +34,7 @@ def _ade_rows(path):
 # ── Page config & header ───────────────────────────────────────────────
 st.set_page_config(
     page_title="📃 Doc Flow",
-    page_icon="",
+    page_icon="📃",
     layout="wide",
     initial_sidebar_state="expanded",
 )
