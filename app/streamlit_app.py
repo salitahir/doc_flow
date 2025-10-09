@@ -57,7 +57,7 @@ def render_header() -> None:
                 font-size: 2.25rem;
                 line-height: 1.2;
             ">
-              DocFlow: Parsing Tool
+              📃 Doc Flow 2.0: Parsing Tool
             </h1>
             """,
             unsafe_allow_html=True,
@@ -75,7 +75,9 @@ def render_header() -> None:
             """,
             unsafe_allow_html=True,
         )
-
+        
+    st.divider()
+    
     # 2) Full-width, right-aligned overview link (caption style)
     st.markdown(
         """
