@@ -33,59 +33,78 @@ def _ade_rows(path):
 
 # ── Page config: wide mode & favicon ─────────────────────────────────
 st.set_page_config(
-    page_title="Doc Flow",
-    page_icon="📃",
+    page_title="DocFlow",
+    page_icon="📃",           # single favicon; no emoji in heading
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── Header: title and byline ────────────────────────────────────────────
-col_left, col_right = st.columns([3, 1])
-with col_left:
-    st.title("📃 Doc Flow 2.0")
+# ── Header (title, byline, overview, description, divider) ───────────
+def render_header() -> None:
+    """Top-of-page header with no underline below the title, plus byline."""
+    # 1) Title + byline columns
+    col_left, col_right = st.columns([3, 1])
 
-st.divider()
+    with col_left:
+        # Use HTML <h1> so Streamlit doesn't add an underline.
+        st.markdown(
+            """
+            <h1 style="
+                margin: 0 0 .25rem 0;
+                padding: 0;
+                border: none;
+                font-weight: 700;
+                font-size: 2.25rem;
+                line-height: 1.2;
+            ">
+              DocFlow: Parsing Tool
+            </h1>
+            """,
+            unsafe_allow_html=True,
+        )
 
-with col_right:
+    with col_right:
+        st.markdown(
+            """
+            <div style="text-align:right; font-size:0.8em;">
+              Developed & Deployed by
+              <a href="https://www.linkedin.com/in/salitahir/" target="_blank">
+                Ali Tahir
+              </a>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # 2) Full-width, right-aligned overview link (caption style)
     st.markdown(
         """
-        <div style="text-align:right; font-size:0.8em;">
-          Developed & Deployed by
-          <a href="https://www.linkedin.com/in/salitahir/" target="_blank">
-            Ali Tahir
+        <div style="text-align:right; font-size:0.8em; margin-bottom:0.5rem;">
+          <a href="https://github.com/salitahir/green_guard" target="_blank">
+            Project Overview and Documentation
           </a>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-# ── Full-width right-aligned “Overview” link (small caption) ──────────
-st.markdown(
-    """
-    <div style="text-align:right; font-size:0.8em; margin-bottom:0.5em;">
-      <a
-        href="https://github.com/salitahir/green_guard" target="_blank"
-      >
-        Overview and Business Application
-      </a>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+    # 3) Short description paragraph
+    st.markdown(
+        """
+        <div style="text-align:justify; line-height:1.5em;">
+          DocFlow converts complex PDFs into clean, structured rows
+          (sentences, headings, bullets, tables) for any downstream NLP or
+          analytics workflow.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
-# ── Full-width project description ────────────────────────────────────
+    # 4) The one and only divider (keep it here)
+    st.divider()
 
-st.markdown(
-    """
-    <div style="text-align:justify; line-height:1.5em;">
-      DocFlow converts complex PDFs into clean, structured rows (sentences, headings, bullets, tables) for any downstream NLP or analytics workflow.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# Keep only this one divider under the description
-st.divider()
+# Call the header
+render_header()
 
 # ── Sidebar controls ──────────────────────────────────────────────────
 st.sidebar.header("Extraction Settings")
