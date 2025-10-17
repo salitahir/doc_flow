@@ -73,12 +73,26 @@ flowchart TD
 ---
 
 ## ⛳ Quickstart
+> **System packages**
+>
+> On Debian/Ubuntu systems install the native libraries required by OpenCV before
+> installing Python dependencies:
+>
+> ```bash
+> sudo apt-get update && sudo apt-get install -y \
+>   libgl1 libglib2.0-0 libsm6 libxext6 libxrender1
+> ```
+
 ```bash
 python -m pip install -r requirements.txt
 python -m streamlit run app/streamlit_app.py
 # or CLI:
 python -m docflow.cli --in sample.pdf --out outputs/sample.xlsx
 ```
+
+When deploying to Streamlit Cloud, keep the `packages.txt` file in the project
+root (it replaces the previous `apt.txt`) so the platform installs the same
+system dependencies automatically.
 
 
 ---
