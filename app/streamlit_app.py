@@ -82,7 +82,7 @@ def render_header() -> None:
     st.markdown(
         """
         <div style="text-align:right; font-size:0.8em; margin-bottom:0.5rem;">
-          <a href="https://github.com/salitahir/green_guard" target="_blank">
+          <a href="https://github.com/salitahir/doc_flow" target="_blank">
             Project Overview and Documentation
           </a>
         </div>
