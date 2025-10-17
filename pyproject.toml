@@ -13,7 +13,7 @@ authors = [{ name = "Ali Tahir", email = "" }]
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/salitahir/green_guard"  # update when split to its own repo
+Homepage = "https://github.com/salitahir/doc_flow"  # update when split to its own repo
 
 [tool.setuptools.packages.find]
 where = ["."]
