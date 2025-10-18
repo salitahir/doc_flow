@@ -7,55 +7,41 @@ from pathlib import Path
 
 from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import PdfPipelineOptions, RapidOcrOptions
+from docling.datamodel.pipeline_options import (
+    PdfPipelineOptions,
+    RapidOcrOptions,
+)
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
 
 _log = logging.getLogger(__name__)
 
 
-def _ensure_rapidocr_assets(options: RapidOcrOptions, artifacts_path: Path) -> bool:
-    """Return True if RapidOCR can run (models present or downloaded)."""
+def _ensure_rapidocr_assets(options: RapidOcrOptions, artifacts_path: Path) -> None:
+    """Make sure the RapidOCR backend has the model files it expects."""
 
     try:
         from docling.models.rapid_ocr_model import RapidOcrModel
     except Exception as exc:  # pragma: no cover - defensive guardrail
-        _log.warning("RapidOCR backend unavailable: %s", exc)
-        return False
+        # ImportError is the expected failure mode if RapidOCR is unavailable.
+        # Defer to Docling's pipeline which will raise a clearer error.
+        _log.debug("Skipping RapidOCR asset prefetch: %s", exc)
+        return
 
     backend = options.backend
+    # Docling currently only ships URLs for the default RapidOCR ONNX/Torch bundles.
     if backend not in ("onnxruntime", "torch"):
-        _log.debug("Unsupported RapidOCR backend '%s'; disabling OCR", backend)
-        return False
+        return
 
-    model_root = artifacts_path / RapidOcrModel._model_repo_folder  # noqa: SLF001
-    model_root.mkdir(parents=True, exist_ok=True)
-
-    model_specs = getattr(RapidOcrModel, "_default_models", {}).get(backend, {})
-    required_files = [model_root / spec["path"] for spec in model_specs.values()]
-
-    def _have_all_models() -> bool:
-        return all(path.exists() for path in required_files)
-
-    if not _have_all_models():
-        try:
-            RapidOcrModel.download_models(
-                backend,
-                local_dir=model_root,
-                force=False,
-                progress=False,
-            )
-        except Exception as exc:  # pragma: no cover - surfaces at runtime
-            _log.warning("Unable to prefetch RapidOCR models: %s", exc)
-
-    if not _have_all_models():
-        missing = [str(path.relative_to(artifacts_path)) for path in required_files if not path.exists()]
-        _log.warning(
-            "RapidOCR models missing after download attempt; OCR will be disabled. Missing: %s",
-            ", ".join(missing) or "<unknown>",
+    try:
+        RapidOcrModel.download_models(
+            backend,
+            local_dir=artifacts_path / RapidOcrModel._model_repo_folder,  # noqa: SLF001
+            force=False,
+            progress=False,
         )
-        return False
-
-    return True
+    except Exception as exc:  # pragma: no cover - surfaces at runtime
+        _log.warning("Unable to prefetch RapidOCR models: %s", exc)
 
 
 def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
@@ -64,12 +50,13 @@ def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
     artifacts_path.mkdir(parents=True, exist_ok=True)
 
     options = RapidOcrOptions()
-    have_rapidocr = _ensure_rapidocr_assets(options, artifacts_path)
+    _ensure_rapidocr_assets(options, artifacts_path)
 
     return PdfPipelineOptions(
         artifacts_path=artifacts_path,                       # <<< key: writable dir
-        do_ocr=have_rapidocr,                               # enable OCR only if models are ready
+        do_ocr=True,                                        # enable OCR
         ocr_options=options                                  # RapidOCR options (engine inferred by type)
+        ocr_options=RapidOcrOptions()                        # RapidOCR options (engine inferred by type)
     )
 
 
