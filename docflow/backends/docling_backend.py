@@ -1,23 +1,43 @@
-"""
-Docling backend: convert input PDF to Markdown.
+"""Docling backend helpers for converting PDFs to Markdown."""
 
-Rationale:
-- Export to Markdown (Docling handles reading order, multi-columns, many tables).
-- Parsing Markdown to rows is done in a separate stage.
+from __future__ import annotations
 
-This version ensures all Docling/RapidOCR artifacts are stored in a writable
-directory (artifacts_path), which is required on Streamlit Cloud.
-"""
-
+import logging
 from pathlib import Path
 
 from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import (
-    PdfPipelineOptions,
-    RapidOcrOptions,
-    OcrEngine,
-)
+from docling.datamodel.pipeline_options import PdfPipelineOptions, RapidOcrOptions
 from docling.document_converter import DocumentConverter, PdfFormatOption
+
+
+_log = logging.getLogger(__name__)
+
+
+def _ensure_rapidocr_assets(options: RapidOcrOptions, artifacts_path: Path) -> None:
+    """Make sure the RapidOCR backend has the model files it expects."""
+
+    try:
+        from docling.models.rapid_ocr_model import RapidOcrModel
+    except Exception as exc:  # pragma: no cover - defensive guardrail
+        # ImportError is the expected failure mode if RapidOCR is unavailable.
+        # Defer to Docling's pipeline which will raise a clearer error.
+        _log.debug("Skipping RapidOCR asset prefetch: %s", exc)
+        return
+
+    backend = options.backend
+    # Docling currently only ships URLs for the default RapidOCR ONNX/Torch bundles.
+    if backend not in ("onnxruntime", "torch"):
+        return
+
+    try:
+        RapidOcrModel.download_models(
+            backend,
+            local_dir=artifacts_path / RapidOcrModel._model_repo_folder,  # noqa: SLF001
+            force=False,
+            progress=False,
+        )
+    except Exception as exc:  # pragma: no cover - surfaces at runtime
+        _log.warning("Unable to prefetch RapidOCR models: %s", exc)
 
 
 def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
@@ -25,10 +45,13 @@ def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
     artifacts_path = Path(artifacts_path)
     artifacts_path.mkdir(parents=True, exist_ok=True)
 
+    options = RapidOcrOptions()
+    _ensure_rapidocr_assets(options, artifacts_path)
+
     return PdfPipelineOptions(
         artifacts_path=artifacts_path,                       # <<< key: writable dir
         do_ocr=True,                                        # enable OCR
-        ocr_options=RapidOcrOptions(kind=OcrEngine.RAPIDOCR)  # use RapidOCR engine
+        ocr_options=options                                  # RapidOCR options (engine inferred by type)
     )
 
 
