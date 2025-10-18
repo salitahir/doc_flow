@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import streamlit as st
 
+
 # --- make sure local package "docflow" is importable on Streamlit Cloud ---
 import sys
 from pathlib import Path
@@ -10,6 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]   # repo root
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 # ----------------------------------------------------------------------------
+
+# Create a writable folder for Docling/RapidOCR models & caches
+ARTIFACTS_DIR = Path(os.environ.get("DOCLING_ARTIFACTS_PATH", str(ROOT / ".artifacts")))
+ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
 
 from docflow.backends.docling_backend import docling_md
 from docflow.sentence_postprocess import parse_markdown_to_rows
@@ -120,7 +125,7 @@ if backend == "agenticdoc":
     landing_api_key = st.sidebar.text_input(
         "Enter your Landing.AI API key",
         type="password",
-        placeholder="sk-xxxxxxxxxxxxxxxxx",
+        placeholder="https://va.landing.ai/ > Your API Key",
     )
     if landing_api_key:
         os.environ["VISION_AGENT_API_KEY"] = landing_api_key
@@ -217,7 +222,7 @@ if submitted:
 
             else:
                 status.update(label="Converting PDF to Markdown via Docling: — this may take a few minutes for large PDFs…")
-                md = docling_md(tmp_path)
+                md = docling_md(tmp_path, artifacts_path=ARTIFACTS_DIR)
                 status.update(
                     label="Parsing Markdown into structured rows — this may take a few minutes for large PDFs."
                 )
