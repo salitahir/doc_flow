@@ -15,7 +15,6 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
     RapidOcrOptions,
-    OcrEngine,
 )
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
@@ -28,7 +27,7 @@ def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
     return PdfPipelineOptions(
         artifacts_path=artifacts_path,                       # <<< key: writable dir
         do_ocr=True,                                        # enable OCR
-        ocr_options=RapidOcrOptions(kind=OcrEngine.RAPIDOCR)  # use RapidOCR engine
+        ocr_options=RapidOcrOptions()                        # RapidOCR options (engine inferred by type)
     )
 
 
