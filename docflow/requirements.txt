@@ -1,5 +1,6 @@
 ADE
 docling
+onnxruntime
 pymupdf
 pandas
 openpyxl
