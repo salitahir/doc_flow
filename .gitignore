@@ -25,3 +25,23 @@ outputs/
 # Models / large artifacts (future-proof)
 models/
 checkpoints/
+# build & python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+.env
+
+# streamlit & editor
+.streamlit/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store
+
+# heavy runtime artifacts (DO NOT COMMIT)
+.artifacts/
+*.onnx
+*.pth
+*.safetensors

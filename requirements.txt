@@ -1,1 +1,7 @@
 -r docflow/requirements.txt
+opencv-python-headless>=4.7,<5
+onnxruntime>=1.17,<2
+huggingface_hub>=0.22
+safetensors>=0.4.3
+transformers>=4.41,<5
+torch>=2.2,<3          # CPU build is fine on Codespaces
