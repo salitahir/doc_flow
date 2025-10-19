@@ -200,14 +200,41 @@ def _prefetch_table_models(artifacts_path: Path) -> None:
             f"Tried base '{base}' from {HF_REPO}."
         )
 
+def _patch_rapidocr_font_download(artifacts_path: Path) -> None:
+    """
+    RapidOCR tries to download FZYTK.TTF into its package dir (read-only on Streamlit).
+    Patch its get_font_path() to download/use a font file under our writable artifacts dir.
+    """
+    try:
+        from rapidocr.utils import vis_res as _vr
+    except Exception as exc:
+        _log.info("RapidOCR vis_res import failed; font patch skipped: %s", exc)
+        return
+
+    target_dir = Path(artifacts_path) / "RapidOcr" / "fonts"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    target_file = target_dir / "FZYTK.TTF"
+
+    original = getattr(_vr, "get_font_path", None)
+    if not callable(original):
+        _log.info("RapidOCR vis_res.get_font_path not callable; font patch skipped.")
+        return
+
+    def _patched_get_font_path(font_path, lang_type):
+        # Always redirect the save path to our writable location
+        return original(str(target_file), lang_type)
+
+    _vr.get_font_path = _patched_get_font_path
+
 def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
     apath = Path(artifacts_path)
     apath.mkdir(parents=True, exist_ok=True)
 
-    # NEW: table-structure assets (needed for TableStructureModel)
-    _prefetch_table_models(apath)
+    # NEW: ensure RapidOCR's font is saved to a writable place on Streamlit
+    _patch_rapidocr_font_download(apath)
 
-    # Existing: layout (object detection) + OCR assets
+    # existing prefetches
+    _prefetch_table_models(apath)
     _prefetch_layout_model(apath)
     _prefetch_rapidocr_models(apath)
 
