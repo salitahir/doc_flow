@@ -203,10 +203,11 @@ def _prefetch_table_models(artifacts_path: Path) -> None:
 def _patch_rapidocr_font_download(artifacts_path: Path) -> None:
     """
     RapidOCR tries to download FZYTK.TTF into its package dir (read-only on Streamlit).
-    Patch its get_font_path() to download/use a font file under our writable artifacts dir.
+    Patch VisRes.get_font_path(...) so it always downloads/uses the font in our
+    writable artifacts dir: <artifacts>/RapidOcr/fonts/FZYTK.TTF
     """
     try:
-        from rapidocr.utils import vis_res as _vr
+        from rapidocr.utils.vis_res import VisRes as _VisRes
     except Exception as exc:
         _log.info("RapidOCR vis_res import failed; font patch skipped: %s", exc)
         return
@@ -215,42 +216,38 @@ def _patch_rapidocr_font_download(artifacts_path: Path) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
     target_file = target_dir / "FZYTK.TTF"
 
-    original = getattr(_vr, "get_font_path", None)
-    if not callable(original):
-        _log.info("RapidOCR vis_res.get_font_path not callable; font patch skipped.")
+    if not hasattr(_VisRes, "get_font_path"):
+        _log.info("RapidOCR VisRes.get_font_path missing; font patch skipped.")
         return
 
-    def _patched_get_font_path(font_path, lang_type):
-        # Always redirect the save path to our writable location
-        return original(str(target_file), lang_type)
+    _orig = _VisRes.get_font_path
 
-    _vr.get_font_path = _patched_get_font_path
+    # VisRes.__init__ calls: self.get_font_path(font_path, lang_type)
+    # so this must be an instance method with signature (self, font_path, lang_type)
+    def _patched(self, font_path, lang_type):
+        # Force RapidOCR to use our writable font path
+        return _orig(self, str(target_file), lang_type)
+
+    _VisRes.get_font_path = _patched  # monkey-patch instance method
 
 def _make_pipeline_options(artifacts_path: Path) -> PdfPipelineOptions:
     apath = Path(artifacts_path)
     apath.mkdir(parents=True, exist_ok=True)
 
-    # NEW: ensure RapidOCR's font is saved to a writable place on Streamlit
-    _patch_rapidocr_font_download(apath)
+    _patch_rapidocr_font_download(apath)  # ← ensure this comes before OCR use
 
-    # existing prefetches
     _prefetch_table_models(apath)
     _prefetch_layout_model(apath)
     _prefetch_rapidocr_models(apath)
 
     rocr = RapidOcrOptions()
-    return PdfPipelineOptions(
-        artifacts_path=apath,
-        do_ocr=True,
-        ocr_options=rocr,
-    )
+    return PdfPipelineOptions(artifacts_path=apath, do_ocr=True, ocr_options=rocr)
 
 def _make_converter(artifacts_path: Path) -> DocumentConverter:
     pipeline_opts = _make_pipeline_options(artifacts_path)
     return DocumentConverter(
         format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=pipeline_opts)}
     )
-
 
 def docling_md(path: str, artifacts_path=None) -> str:
     apath = Path(artifacts_path) if artifacts_path is not None else Path.cwd() / ".artifacts"
