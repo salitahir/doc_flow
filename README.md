@@ -73,15 +73,6 @@ flowchart TD
 ---
 
 ## ⛳ Quickstart
-> **System packages**
->
-> On Debian/Ubuntu systems install the native libraries required by OpenCV before
-> installing Python dependencies:
->
-> ```bash
-> sudo apt-get update && sudo apt-get install -y \
->   libgl1 libglib2.0-0 libsm6 libxext6 libxrender1
-> ```
 
 ```bash
 python -m pip install -r requirements.txt
