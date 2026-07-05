@@ -25,40 +25,57 @@ HF_REPO = "ds4sd/docling-models"
 
 def _prefetch_rapidocr_models(artifacts_path: Path) -> None:
     """
-    Ensure RapidOCR ONNX models exist under:
-      <artifacts_path>/RapidOcr/onnx/PP-OCRv4/{det,rec,cls}/...
+    Ensure RapidOCR ONNX models exist under <artifacts_path>/RapidOcr/...
+    Works across docling versions (the class moved in newer releases, and
+    the default model set changed from PP-OCRv4 to PP-OCRv6).
     """
+    import importlib
+
     apath = Path(artifacts_path)
     apath.mkdir(parents=True, exist_ok=True)
 
-    try:
-        from docling.models.rapid_ocr_model import RapidOcrModel  # type: ignore
-    except Exception as exc:
-        _log.info("RapidOcrModel import failed; skipping OCR prefetch: %s", exc)
-        return
+    RapidOcrModel = None
+    for mod_name in (
+        "docling.models.stages.ocr.rapid_ocr_model",  # docling >= ~2.5x
+        "docling.models.rapid_ocr_model",             # older docling
+    ):
+        try:
+            RapidOcrModel = getattr(importlib.import_module(mod_name), "RapidOcrModel")
+            break
+        except Exception:
+            continue
+
+    if RapidOcrModel is None:
+        # Fail loudly — a silent skip here is what previously caused
+        # FileNotFoundError deep inside conversion.
+        raise RuntimeError(
+            "Could not import RapidOcrModel from docling; "
+            "check the installed docling version."
+        )
 
     repo_folder = getattr(RapidOcrModel, "_model_repo_folder", "RapidOcr")
     local_dir = apath / repo_folder
     local_dir.mkdir(parents=True, exist_ok=True)
 
-    expected_det = local_dir / "onnx" / "PP-OCRv4" / "det" / "ch_PP-OCRv4_det_infer.onnx"
-    if expected_det.exists():
-        return
+    # download_models() skips files that already exist, so it's safe (and
+    # cheap) to call on every startup. Crucially, this same docling version
+    # decides both what to download and what to load at runtime, so the
+    # paths always agree — no hardcoded filenames on our side.
+    try:
+        RapidOcrModel.download_models(
+            backend="onnxruntime",
+            local_dir=local_dir,
+            force=False,
+            progress=False,
+        )
+    except TypeError:
+        # very old signature without the `backend` kwarg
+        RapidOcrModel.download_models(local_dir=local_dir, force=False, progress=False)
 
-    for backend_name in ("onnxruntime", "onnx"):
-        try:
-            RapidOcrModel.download_models(
-                backend=backend_name,
-                local_dir=local_dir,
-                force=False,
-                progress=False,
-            )
-            if expected_det.exists():
-                return
-        except Exception as exc:
-            _log.info("RapidOCR download via backend=%s failed: %s", backend_name, exc)
-
-    raise FileNotFoundError(f"RapidOCR ONNX models not found. Expected: {expected_det}")
+    if not any(local_dir.rglob("*.onnx")):
+        raise FileNotFoundError(
+            f"RapidOCR ONNX models were not downloaded into {local_dir}"
+        )
 
 
 # --------------------------- LAYOUT PREFETCH ----------------------------
