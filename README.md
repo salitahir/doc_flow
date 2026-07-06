@@ -10,8 +10,6 @@
 
 **DocFlow 2.0** is a hybrid document-to-structured-data pipeline designed to help researchers, analysts, and builders extract **clean, analyzable text** from complex PDF reports. It automates the messy task of parsing long-form documents—turning them into ready-to-use spreadsheets for labeling, analytics, or model training. 
 
-📎 [Workflow Demo](#) *(temporary placeholder)*
-
 ---
 
 ## 🚀 Key Features
